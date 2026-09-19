@@ -1,0 +1,71 @@
+# Project Plan: AI-Agent-as-a-Service for Small Businesses
+
+## Business Overview
+Building a background AI agent automation service targeting small businesses to save time and capture missed leads. The infrastructure leverages low-code orchestration tools supplemented by custom script nodes for data cleaning and payload formatting.
+
+---
+
+## Architecture & Tech Stack
+
+*   **Orchestration Engine:** n8n (Self-hosted / Free tier) or Make.com (Free tier)
+*   **AI Engine:** Google Gemini Flash or OpenAI GPT-4o-mini (highly cost-efficient API tiers)
+*   **Data Layer:** Google Sheets or Airtable (serves as a lightweight, user-friendly CRM/Database)
+*   **Custom Execution:** Inline Python/JavaScript code blocks for custom regex parsing and text sanitization
+*   **Human-in-the-Loop Gate:** Slack, WhatsApp, or email notifications for client approval before outbound execution
+
+---
+
+## MVP Target: The "24/7 Missed-Lead Responder"
+The core service offering will automate lead intake, clean customer contact data, draft a hyper-personalized response via the LLM, and queue it for business-owner approval before sending.
+
+---
+
+## Detailed Phase Breakdown
+
+### Phase 1: Tech Stack Setup & Scoping (Week 1)
+Focus on establishing a zero-cost infrastructure footprint to build and test the workflow.
+
+- [ ] **Infrastructure Initialization**
+  - Set up a developer account on OpenAI or Google Google AI Studio to acquire API keys.
+  - Deploy a local or cloud instance of n8n, or set up a free development space on Make.com.
+  - Create a master Google Sheet template to act as the lightweight client CRM.
+- [ ] **Integration Endpoints**
+  - Configure a dedicated testing inbox or webhook URL to intercept simulated inbound leads.
+  - Wire a basic "Webhook $\rightarrow$ LLM API $\rightarrow$ Sheet Log" flow to verify cross-platform connectivity.
+- **Phase Deliverable:** A working connection where sending a dummy email triggers a successful AI response draft logged in a data sheet.
+
+### Phase 2: Building and Hybrid Coding (Weeks 2–3)
+Inject custom programmatic logic to clean up messy user-submitted data and build client safety guardrails.
+
+- [ ] **Data Sanitization & Parsing (The Code Node)**
+  - Write custom Python/JavaScript scripts to handle raw, unformatted text from web forms.
+  - Use regular expressions (Regex) to extract, validate, and standardize phone numbers, names, and emails.
+- [ ] **Core Agent Prompt Engineering**
+  - Author strict system prompts containing small business rules, brand voice constraints, and anti-hallucination guardrails.
+- [ ] **Human-in-the-Loop Implementation**
+  - Build a secondary branching logic route: instead of sending an auto-response directly to customers, route the draft to a testing Slack channel or email.
+  - Provide clear "Approve" and "Edit" action triggers to the business owner.
+- **Phase Deliverable:** A functional pipeline that captures an unformatted lead, programmatically cleans it, structures it for the AI, and generates a review-ready response template.
+
+### Phase 3: Security & Pilot Testing (Week 4)
+Ensure client data isolation and stress-test the environment under real-world conditions.
+
+- [ ] **Data Isolation Architecture**
+  - Implement access controls and strict environment separation.
+  - Ensure client variables, prompt memories, and context banks never cross-contaminate.
+- [ ] **Onboard Local Pilot Clients**
+  - Recruit 1–2 friendly small businesses (e.g., local contractors, freelancers, or boutique agencies) for a free 2-week pilot.
+  - Connect their real-world intake streams (like web contact forms) to the background automation engine.
+- [ ] **Iteration & Refinement**
+  - Audit run logs daily to identify prompt breakdowns or edge cases where data parsing fails.
+  - Adjust LLM system styling parameters to match the unique brand voice of each pilot client.
+- **Phase Deliverable:** Two weeks of error-free background execution logs with a 90%+ target rate for high-quality autonomous drafts.
+
+### Phase 4: Package & Launch (Week 5+)
+Productize the service model and launch to the public.
+
+- [ ] **Define Packaging & Pricing**
+  - Structure the offering as a flat monthly retainer utility fee ($149–$299/mo) focused on ROI (e.g., time saved or leads saved) rather than technical jargon.
+- [ ] **Deployment Framework**
+  - Design a fast onboarding template to clone the base automation pipeline for new clients in under an hour.
+- **Phase Deliverable:** Public launch with a clear intake questionnaire and the capacity to accept first paid enterprise clients.
