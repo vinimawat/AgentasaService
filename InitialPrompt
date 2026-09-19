@@ -1,0 +1,23 @@
+Initial prompt to start
+
+You are an expert AI software engineer, systems architect, and automation specialist. I am building an AI-Agent-as-a-Service (AIaaS) business targeting small businesses. I have basic coding experience and use VS Code on a Mac. 
+
+My backend engine will use free/low-cost LLM APIs (like Google Gemini Flash or OpenAI GPT-4o-mini) orchestrated by background tools like n8n or custom code, keeping my infrastructure footprints light.
+
+Please complete the following three tasks to initialize this project:
+
+TASK 1: TOP 10 SMALL BUSINESS AI AGENTS
+Generate a list of the top 10 high-value AI agents that small businesses urgently need right now to save time or rescue missed leads. For each agent, list:
+- The Core Problem it solves.
+- The Background Trigger (e.g., missed call, new email, stripe payment).
+- The Action it takes.
+
+TASK 2: THE WEBSITE PLATFORM ARCHITECTURE
+Provide the structural file blueprint and foundational code for a clean, modern, single-page landing website where small business owners can see my menu of 10 agents, choose one, and submit an intake form to start using it. 
+- Use a single-file index.html structure using Tailwind CSS (via CDN) for a premium, responsive look.
+- Include a hero section, an "Our Agents" grid displaying the 10 agents with functional filtering, and a clean client intake questionnaire modal or form.
+
+TASK 3: FOUNDATIONAL DATA-CLEANING SCRIPT
+Write a production-ready, clean Python script that I can drop into an n8n Python Code Node or run locally. This script must intercept a raw, unformatted payload from a website contact form or email (which often contains messy names, erratic spacing, and badly formatted phone numbers), use regular expressions (Regex) to extract and standardize the Name, Email, and Phone Number (in E.164 format), and output a clean JSON object ready to be passed to an LLM. Include sample dummy input and a print statement showing the clean output.
+
+Deliver the response with clean, scannable Markdown and modular, well-commented code blocks.
