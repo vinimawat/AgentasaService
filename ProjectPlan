@@ -1,71 +1,275 @@
 # Project Plan: AI-Agent-as-a-Service for Small Businesses
 
-## Business Overview
-Building a background AI agent automation service targeting small businesses to save time and capture missed leads. The infrastructure leverages low-code orchestration tools supplemented by custom script nodes for data cleaning and payload formatting.
+Status: proposed implementation baseline, revised 2026-09-20. This repository currently contains planning documents, a README, and a license; it does not yet contain an application, workflow, or test suite. Features and targets below describe intended work, not existing capabilities.
 
----
+Companion document: [InitialPrompt](./InitialPrompt). This plan defines product scope and acceptance criteria; the prompt file breaks the complete planned MVP into small, executable tasks from setup through pilot and launch. Keep both aligned when decisions change.
 
-## Architecture & Tech Stack
+## 1. Product direction and review findings
 
-*   **Orchestration Engine:** n8n (Self-hosted / Free tier) or Make.com (Free tier)
-*   **AI Engine:** Google Gemini Flash or OpenAI GPT-4o-mini (highly cost-efficient API tiers)
-*   **Data Layer:** Google Sheets or Airtable (serves as a lightweight, user-friendly CRM/Database)
-*   **Custom Execution:** Inline Python/JavaScript code blocks for custom regex parsing and text sanitization
-*   **Human-in-the-Loop Gate:** Slack, WhatsApp, or email notifications for client approval before outbound execution
+Build a service that configures and maintains practical automations for small businesses. Start with a repeatable lead-response workflow, validate its value with 1–2 businesses, and expand the catalogue using evidence from those pilots. The founder has basic coding experience, uses VS Code on a Mac, and needs a small system with clear setup and recovery instructions.
 
----
+The original direction is retained, with these changes:
 
-## MVP Target: The "24/7 Missed-Lead Responder"
-The core service offering will automate lead intake, clean customer contact data, draft a hyper-personalized response via the LLM, and queue it for business-owner approval before sending.
+| Gap in the original documents | Revised approach |
+| --- | --- |
+| Ten website offerings but only one defined workflow | Present ten service ideas; implement and pilot one before expanding. |
+| “Missed-lead” implies phone coverage without a telephony integration | Start with website enquiries and email replies; missed calls are a later integration. |
+| Website submission and customer lead ingestion are conflated | Separate business-owner service requests from leads submitted to a client's business. |
+| Multiple interchangeable stacks and a zero-cost assumption | Choose a default path, record hosting/licensing dependencies, and budget for real operating costs. |
+| Regex-only E.164 conversion and universal n8n Python compatibility | Use a tested phone library and explicit country context; document the actual execution environment. |
+| Approval actions and failure handling are unspecified | Define persistent states, version-bound approvals, retries, and uncertain-delivery handling. |
+| A two-week pilot is placed inside one week | Begin the pilot after readiness checks and allow at least 14 days before launch evaluation. |
 
----
+## 2. Customers, outcome, and scope
 
-## Detailed Phase Breakdown
+Initial customer hypothesis: owner-operated home-service businesses, such as cleaners, landscapers, and contractors, with an existing web contact form and an owner who can review drafts. Validate this segment through discovery; do not claim proven demand or guaranteed recovered revenue.
 
-### Phase 1: Tech Stack Setup & Scoping (Week 1)
-Focus on establishing a zero-cost infrastructure footprint to build and test the workflow.
+The first service is the **24/7 Missed-Lead Responder**: capture a web enquiry at any hour, prepare an accurate response, notify the owner, and send only the version the owner approves. “24/7” describes intake and drafting availability, not around-the-clock human review or a promised uptime SLA.
 
-- [ ] **Infrastructure Initialization**
-  - Set up a developer account on OpenAI or Google Google AI Studio to acquire API keys.
-  - Deploy a local or cloud instance of n8n, or set up a free development space on Make.com.
-  - Create a master Google Sheet template to act as the lightweight client CRM.
-- [ ] **Integration Endpoints**
-  - Configure a dedicated testing inbox or webhook URL to intercept simulated inbound leads.
-  - Wire a basic "Webhook $\rightarrow$ LLM API $\rightarrow$ Sheet Log" flow to verify cross-platform connectivity.
-- **Phase Deliverable:** A working connection where sending a dummy email triggers a successful AI response draft logged in a data sheet.
+**MVP includes:** a service catalogue and intake website; one client web-form integration; contact normalization; business-specific response drafts; owner review, edit, approve, and reject; approved email delivery; a simple CRM export; an audit trail and manual recovery.
 
-### Phase 2: Building and Hybrid Coding (Weeks 2–3)
-Inject custom programmatic logic to clean up messy user-submitted data and build client safety guardrails.
+**Deferred:** missed-call/SMS/WhatsApp integrations, mailbox ingestion, automated follow-up campaigns, autonomous sending, payments, calendar booking, multi-agent orchestration, retrieval/vector databases, a self-service customer portal, and a shared multi-tenant application. Avoid regulated or highly sensitive workflows in the initial pilot.
 
-- [ ] **Data Sanitization & Parsing (The Code Node)**
-  - Write custom Python/JavaScript scripts to handle raw, unformatted text from web forms.
-  - Use regular expressions (Regex) to extract, validate, and standardize phone numbers, names, and emails.
-- [ ] **Core Agent Prompt Engineering**
-  - Author strict system prompts containing small business rules, brand voice constraints, and anti-hallucination guardrails.
-- [ ] **Human-in-the-Loop Implementation**
-  - Build a secondary branching logic route: instead of sending an auto-response directly to customers, route the draft to a testing Slack channel or email.
-  - Provide clear "Approve" and "Edit" action triggers to the business owner.
-- **Phase Deliverable:** A functional pipeline that captures an unformatted lead, programmatically cleans it, structures it for the AI, and generates a review-ready response template.
+### Candidate catalogue
 
-### Phase 3: Security & Pilot Testing (Week 4)
-Ensure client data isolation and stress-test the environment under real-world conditions.
+This is a prioritized hypothesis, not a researched “top ten” market ranking. Only the first service is in the MVP. All others are discovery options whose interest can be captured without implying they are live.
 
-- [ ] **Data Isolation Architecture**
-  - Implement access controls and strict environment separation.
-  - Ensure client variables, prompt memories, and context banks never cross-contaminate.
-- [ ] **Onboard Local Pilot Clients**
-  - Recruit 1–2 friendly small businesses (e.g., local contractors, freelancers, or boutique agencies) for a free 2-week pilot.
-  - Connect their real-world intake streams (like web contact forms) to the background automation engine.
-- [ ] **Iteration & Refinement**
-  - Audit run logs daily to identify prompt breakdowns or edge cases where data parsing fails.
-  - Adjust LLM system styling parameters to match the unique brand voice of each pilot client.
-- **Phase Deliverable:** Two weeks of error-free background execution logs with a 90%+ target rate for high-quality autonomous drafts.
+| ID | Service | Core problem and trigger | Proposed action | Success measure |
+| --- | --- | --- | --- | --- |
+| `lead-response` | 24/7 Missed-Lead Responder | New web enquiry waits for a busy owner | Draft a contextual email for owner approval | Time to draft; time to approved response |
+| `quote-follow-up` | Quote Follow-up Assistant | Sent quote receives no reply by an agreed interval | Queue an approved follow-up after checking current status | Replies per eligible quote |
+| `appointment-reminders` | Appointment Reminder Assistant | Confirmed appointment approaches | Prepare a reminder using verified booking details | No-show rate against baseline |
+| `faq-triage` | FAQ and Inbox Triage | Repeated questions consume staff time | Classify messages and draft answers from approved facts | Handling time; escalation rate |
+| `review-requests` | Review Request Assistant | Completed service has no feedback | Request honest feedback under the client's approved policy | Feedback response rate |
+| `invoice-reminders` | Invoice Reminder Assistant | Invoice remains unpaid after its due date | Verify payment state and queue a factual reminder | Staff time spent chasing invoices |
+| `customer-onboarding` | Customer Onboarding Assistant | New customer needs setup instructions | Prepare a welcome message and missing-information request | Time to completed onboarding |
+| `crm-cleanup` | CRM Data Cleanup Assistant | New or imported contact data is inconsistent | Normalize contacts and flag possible duplicates for review | Valid records; manual correction rate |
+| `content-drafts` | Content Drafting Assistant | Owner supplies a promotion or content brief | Draft posts using approved claims and brand voice | Owner-approved drafts; editing time |
+| `weekly-digest` | Weekly Business Digest | Reporting period ends | Summarize authorized operational data and unresolved items | Reporting time saved; factual accuracy |
 
-### Phase 4: Package & Launch (Week 5+)
-Productize the service model and launch to the public.
+Apply a human approval step before external messages or material data changes in future services. Define each service's integrations and permissions before implementation.
 
-- [ ] **Define Packaging & Pricing**
-  - Structure the offering as a flat monthly retainer utility fee ($149–$299/mo) focused on ROI (e.g., time saved or leads saved) rather than technical jargon.
-- [ ] **Deployment Framework**
-  - Design a fast onboarding template to clone the base automation pipeline for new clients in under an hour.
-- **Phase Deliverable:** Public launch with a clear intake questionnaire and the capacity to accept first paid enterprise clients.
+## 3. Default architecture and decision boundaries
+
+**Selection criteria:** use free, commercially usable software; keep the number of services and credentials small; preserve durable jobs, owner approval, client isolation, and recovery; pay modest hosting/model costs when needed. This is the recommended fit for this MVP, not a claim that one stack is universally best. Model quality and server capacity still require the prompt sequence's measurements.
+
+| Layer | Selected default | Reason and boundary |
+| --- | --- | --- |
+| Public website | Semantic HTML, vanilla JavaScript, compiled Tailwind CSS | One page and a small review UI do not require React/Next.js or a separate frontend host. Compile CSS for deployment. |
+| Backend | Python, FastAPI/Pydantic, Uvicorn | One codebase for validation, normalization, persistence, reviews, and delivery. Keep credentials and privileged actions server-side. |
+| Workflow execution | The application's Python worker with SQLite-backed jobs | P15 already implements claims, leases, retries, and restart recovery. Reuse it; no mandatory external orchestrator, broker, Redis, or Celery. |
+| Normalization | Pure Python plus `phonenumbers` | Reuse one deterministic library in the API, worker, and CLI; numbering metadata and trusted region context prevent guessed phone numbers. |
+| Database | SQLite 3 through standard-library `sqlite3` | Selected for development, pilot, and initial production. No ORM or database server; follow the accepted storage contract below. |
+| Client reports | Authorized CSV exports using standard-library `csv` | Importable into spreadsheets without OAuth setup or a second live datastore. Exports cannot control approval or sending. |
+| Draft generation | Gemini Developer API on a paid project; initial candidate `gemini-3.1-flash-lite` | One configurable model adapter. Evaluate factual accuracy, latency, data terms, and actual cost before live use; no model tools or autonomous actions. |
+| Email | Resend transactional API, initially its free plan if volume fits | One client-owned account and verified sender per pilot, with one callback endpoint for that deployment. Count notifications, replies, reminders, and alerts against quotas. |
+| Hosting and HTTPS | A paid Linux VM, Caddy, and systemd | Persistent local disk, automatic TLS, and supervised application processes. Default sizing candidate: DigitalOcean Basic, 1 vCPU/2 GiB/50 GiB SSD; benchmark before committing. |
+| Tests and CI | pytest + coverage.py/pytest-cov; Vitest; Playwright; Linux GitHub Actions | Free test tools for Python, JavaScript, and real browser flows; enforce the full-source 100% gates in section 9. CI service usage must fit the repository's allowance. |
+
+Run one Uvicorn process/worker per application database. Start one durable dispatcher through the application lifespan; SQLite stores due times, claims, and progress. Recover interrupted work on startup and shut down handlers deliberately. In-memory tasks or FastAPI BackgroundTasks alone are not a durable queue. Only this backend accesses its operational database. Reuse the existing job mechanism instead of adding a generic workflow framework.
+
+The public catalogue's service-request store belongs to this business. Each pilot has separate configuration, database, credentials, and application service. If sharing a VM initially, use distinct OS users/private directories and bind internal services to loopback; clients receive no shell access. This provides application/process separation, not independent host failure or administrator isolation. Use separate VMs when ownership or isolation requires it. A single VM has maintenance downtime and a shared failure domain; do not claim high availability.
+
+### Free software and operating costs
+
+The software core needs no subscription: SQLite is public domain, FastAPI and Tailwind use MIT licenses, and Caddy uses Apache-2.0. Preserve notices and inspect licenses of pinned direct/transitive dependencies before release; an API's free allowance does not make its hosted service open-source. [SQLite](https://www.sqlite.org/copyright.html), [FastAPI](https://fastapi.tiangolo.com/), [Tailwind license](https://github.com/tailwindlabs/tailwindcss/blob/main/LICENSE), [Caddy license](https://github.com/caddyserver/caddy/blob/master/LICENSE)
+
+Provider facts below were checked on 2026-09-20. Recheck availability, region, prices, quotas, and terms in P18/P24/P34; this plan authorizes no purchase.
+
+| Item | Planning baseline | Constraint |
+| --- | --- | --- |
+| Always-on VM | The selected DigitalOcean size is listed at US$12/month | Per VM; additional deployments may need more capacity or another VM. No production capacity claim until measured. [Pricing](https://www.digitalocean.com/pricing/droplets) |
+| Model | Gemini 3.1 Flash-Lite standard text: US$0.25/million input and US$1.50/million output tokens, including thinking | Example: 1,000 drafts at 1,500 input + 250 billable output tokens cost about US$0.75; a 20% retry allowance gives US$0.90. This calculation excludes tools/caching/tax and is not measured usage. Reserve against configured maximums, not these illustrative averages. [Pricing](https://ai.google.dev/gemini-api/docs/pricing) |
+| Email | Resend Free: 3,000 emails/month, 100/day, 3 domains, 1 webhook endpoint | 1,000 leads with one notification and reply use 2,000 messages before reminders/alerts. Daily bursts may exceed the limit even when monthly volume fits. Reassess the plan before promising higher volume. [Pricing](https://resend.com/pricing) |
+| Backups and domain | Obtain a quote for encrypted off-host snapshot storage and domain renewal | Neither is included in the software's zero-license-cost claim. Local snapshots alone do not survive host loss. |
+| CI | Use standard Linux runners and short artifact retention | Check the repository's included minutes/storage and spending controls; private-repository usage is not unlimited. [Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions) |
+
+Use **US$15–25/month per VM deployment as an initial infrastructure planning allowance**, subject to the actual backup quote, model volume, and load test. This is an estimate, not a vendor bundle or an approved spending ceiling. Domain registration/renewal, taxes, operator labor, a second VM, and any paid email upgrade are additional. A client that needs more than the free email quota must accept a revised budget or lower included volume before activation.
+
+For real customer leads, require a Gemini project with active billing and reviewed Paid Services terms. Those terms exclude prompts/responses from product improvement, while retaining limited abuse-monitoring processing; they do not promise zero retention. The default policy permits unpaid model services only for synthetic data and never as an automatic fallback for real leads. Minimize personal data in prompts and document the approved processing region/terms. [Gemini terms](https://ai.google.dev/gemini-api/terms)
+
+Each pilot uses its client's dedicated email account, so its database can enforce that account's allocated quota without cross-database transactions. If other applications use that account, reserve headroom and reconcile provider usage; block activation when available quota is unknown. Sharing one provider account across client deployments would require an explicit redesign of quota accounting and callback routing, not independent counters that can each spend the same allowance.
+
+### Alternatives reviewed
+
+| Alternative | Decision for this MVP | Reconsider when |
+| --- | --- | --- |
+| n8n | Optional, outside the launch dependency graph. It duplicates the required durable Python worker, adds operations, and its licensing depends on the delivery model. | A client needs a visual integration editor and its exact usage/license is confirmed. Consult the official guidance before hosting client workflows/credentials or embedding it. [n8n guidance](https://support.n8n.io/article/can-i-use-your-license-for-my-use-case) |
+| Google Sheets API | Optional later; CSV covers the initial export requirement. | A pilot demonstrates a need for automatic spreadsheet synchronization and accepts credential/quota maintenance. |
+| PostgreSQL or managed database | Defer a separate database service. | Measured SQLite contention, multi-host writers, or availability requirements justify migration. |
+| Free sleeping/ephemeral hosting | Unsuitable for this always-on local-SQLite deployment; Render Free does not provide persistent disks. | The architecture or service availability requirements change. [Render Free limits](https://render.com/docs/free) |
+| Local Ollama | Optional experiment, not the default production dependency. The inspected development Mac runs macOS 12.7.6 on Intel; current Ollama macOS documentation requires macOS 14 or newer. | Supported hardware/OS, model license, quality, and always-on operating costs are demonstrated. [Ollama requirements](https://docs.ollama.com/macos) |
+
+Use native Python virtual environments and Node only for frontend tooling locally; do not require Docker Desktop or a local model installation. Verify actual supported runtime versions on the Mac. If that OS cannot run a supported tool, use an authorized supported Linux environment and report that distinction rather than pinning an obsolete runtime. Production and browser acceptance run on supported Linux. Caddy can obtain/renew certificates automatically after DNS and network prerequisites are satisfied. [Caddy automatic HTTPS](https://caddyserver.com/docs/automatic-https)
+
+### SQLite database decision — accepted
+
+**Decision:** use SQLite for all first-party application persistence. It fits the small pilot's local storage and bounded write workload, avoids a separate database server, and supports the transactions needed for approvals and deduplication. Initial production uses the same database engine as development and testing. A server database is a future architecture review if measured contention or availability needs exceed this design, not a prerequisite for launch. [SQLite usage guidance](https://www.sqlite.org/whentouse.html)
+
+**Storage boundaries:**
+
+| Store | Location and ownership | Intended records |
+| --- | --- | --- |
+| Service business | Its own deployment; local example `./data/service-requests.sqlite3` | Catalogue service requests, submission keys, and schema history |
+| Pilot client | One isolated deployment/volume per client; local example `./data/pilot.sqlite3` | Leads, jobs, drafts, review tokens/approvals, outbox, provider events, suppression, budgets, export state, and audit events |
+
+Use one server-owned `SQLITE_DATABASE_PATH` per application deployment. Resolve development paths predictably; require an explicit absolute path on a persistent volume in production. Never derive the path from a request or client-supplied identifier. Production startup must reject missing/unwritable databases or an incompatible schema instead of silently creating an empty file. Only an explicit initialization/migration command creates a database. Exclude database files, sidecars, and backups from Git and public asset directories.
+
+Beads keeps its own tracker-managed database; this decision does not change the issue tracker's storage. Any future external orchestrator must call authenticated backend contracts and own its separate storage; it must never open the application's SQLite file.
+
+**Connection and transaction contract:**
+
+- Use the standard-library `sqlite3` driver with parameterized SQL in a small repository/storage module. Create, use, and close each connection within one synchronous unit of work on the same thread. Offload those units from async request/worker event loops; do not share a mutable global connection or hold a connection across an external API call. Pin the Python runtime and verify its linked `sqlite3.sqlite_version`, not just the shell SQLite version. [Python sqlite3 documentation](https://docs.python.org/3/library/sqlite3.html)
+- Bootstrap with `PRAGMA journal_mode=WAL` and verify the returned mode. Set and verify `PRAGMA foreign_keys=ON`, `PRAGMA busy_timeout=5000`, and `PRAGMA synchronous=FULL` on each application connection before transactions. Keep normal checkpointing enabled and monitor WAL growth. The 5-second timeout is a starting limit to validate under pilot load. [SQLite PRAGMA reference](https://www.sqlite.org/pragma.html)
+- Require a supported SQLite build with the documented WAL-reset fix: 3.51.3 or newer, or an explicitly verified official patched backport. WAL permits concurrent readers but still serializes write transactions; it requires same-host storage rather than a shared network filesystem. [SQLite WAL guidance and fix](https://www.sqlite.org/wal.html)
+- Use explicit, short transactions. For claims, budget reservations, and approval-plus-outbox changes, use `BEGIN IMMEDIATE`, database constraints, conditional updates, and checked row counts, followed by commit or rollback. Never hold a write transaction while calling an LLM, email provider, or other external service. Handle lock-timeout errors with a bounded retry of an idempotent database unit or a retryable response; do not retry external sends because a database operation failed. [SQLite transactions](https://www.sqlite.org/lang_transaction.html)
+
+**Schemas and migrations:** keep versioned SQL migrations and a checksummed `schema_migrations` history for each application database role. Apply migrations once in maintenance/startup preparation with the application stopped; test rollback of a failed migration. Back up before production changes, prefer additive migrations, and use a tested restore or forward-fix path for incompatible changes. Use foreign keys, `NOT NULL`/`CHECK` constraints, unique idempotency/approval/outbox keys, and indexes for due jobs, state, and timestamps. Store timestamps in a consistent UTC format and budget amounts in documented integer units. Avoid cross-file transactions; the records needed for one approval/send-intent commit belong in the same pilot database.
+
+**Deployment:** run one application instance with one Uvicorn worker per database, with the durable dispatcher in that process. This is the project's operational limit, not a claim that SQLite supports only one connection. Use a persistent host filesystem with correct SQLite locking; do not use an ephemeral container layer, a shared NFS/SMB mount, a synced folder, or multiple application replicas sharing the file. Persist the containing directory so database sidecars survive restarts. Protect files with OS permissions, disk encryption, and encrypted backups. Monitor free space, lock timeouts, WAL size, and restore time before increasing capacity.
+
+**Backup and recovery:** create application snapshots with SQLite's online backup API, exposed by Python as `Connection.backup()`, and copy completed encrypted snapshots to separate durable storage. Never back up a running WAL database by copying only its main file. On an isolated restore with sending disabled, run `PRAGMA integrity_check` and `PRAGMA foreign_key_check`, verify schema/data counts, and reconcile claims/outbox state before activation. Back up the deployed code version, migration history, and separately protected configuration needed to restore the application. [SQLite backup API](https://www.sqlite.org/backup.html)
+
+**Acceptance:** use temporary file-backed SQLite databases for integration tests, not only `:memory:` databases or mocks. Verify migration upgrades/failures, connection settings, concurrent duplicates and claims, lock contention, transaction rollback, restart durability, read-only/disk-full failures, and backup restoration. All first-party storage/migration code remains subject to the 100% coverage gate. Reassess the architecture before adding replicas, shared cross-host file access, or a workload whose measured write queues cannot meet the pilot targets.
+
+Tailwind's browser CDN is for development; build static CSS before deployment. [Tailwind Play CDN](https://tailwindcss.com/docs/installation/play-cdn)
+
+## 4. Two distinct user journeys
+
+### A. A business owner requests the service
+
+1. Browse ten agent cards, filter by category, and choose an agent. Mark `lead-response` as “Request pilot” and the others as “Register interest”; selection never activates a workflow.
+2. Complete the intake form: selected agent, business name/type, contact name/email, country/timezone, existing tools, approximate monthly lead volume, main problem, and permission to be contacted about this request. Phone and website are optional. Do not collect passwords, API keys, or real customer records.
+3. Submit to `POST /api/service-requests`. Validate server-side, apply request-size and abuse limits, persist the request, and return a receipt ID only after storage succeeds. Reuse a submission key for retries: the same payload returns its original receipt; a conflicting payload returns an error. Origin restrictions supplement abuse controls; CORS is not authentication.
+4. The founder contacts the owner, confirms fit and access requirements, and configures the pilot manually. A successful request is not an active subscription or connected agent.
+
+Use labelled fields, keyboard-accessible filters, visible focus, clear validation, loading/error/success states, and a retry path. If using a modal, support Escape, focus containment, and focus return. Keep the form usable on mobile. Do not simulate a successful submission when the endpoint is absent.
+
+### B. A lead reaches a pilot customer's business
+
+```text
+Client's web form -> trusted intake adapter -> validated, persisted event
+  -> normalize -> eligibility checks -> draft -> owner review
+  -> approve exact version -> durable outbox -> email provider
+  -> delivery updates + CRM export + operational audit
+```
+
+The public form posts to a server-side adapter with abuse controls. That adapter authenticates to `POST /api/leads`; integration secrets never appear in browser code. Verify the adapter identity and replay protections, and derive `client_id` from trusted server configuration, never from an arbitrary submitted field. Persist before acknowledging acceptance. The adapter must reuse the same event ID when retrying a submission.
+
+## 5. Data contracts and normalization rules
+
+Keep schemas versioned and shared across the API, normalizer, workflow, and tests. All times are UTC ISO 8601, with the client's timezone used for display and business rules.
+
+| Record | Minimum information |
+| --- | --- |
+| Service request | Receipt ID, selected agent ID, business/contact details, problem, tools, volume band, country/timezone, contact permission and timestamp, status |
+| Client configuration | Server-owned client ID, authorized owner, verified business facts, service area/hours, tone, default phone region if known, allowed sender, credential references, budget, retention settings |
+| Lead event | Schema version, client ID, source, stable source event ID, server-assigned lead ID, receipt time, contact fields, message, provenance, contact-permission evidence if applicable |
+| Normalization result | Name, email, E.164 phone, phone extension, message, validation warnings/errors, `ready_for_draft` |
+| Draft and approval | Lead ID, draft ID/version, subject/body, prompt/model/config versions, review decision, reviewer, recipient, content hash, expiry and decision time |
+| Delivery and audit | Outbox ID, idempotency key, state, attempt count, provider message ID/status, last error code, timestamps and actor |
+
+Enforce a unique `(client_id, source, source_event_id)` event key and one send intent per approved draft version. Matching email addresses alone do not prove two enquiries are duplicates. A repeated event with the same payload returns the original receipt; a conflicting payload under the same key is rejected and investigated. Define an accepted replay window and retain minimal deduplication records for at least that window; reject older replays even after contact content is deleted.
+
+Normalization requirements:
+
+- Accept structured fields or bounded plain text. Prefer structured values; use labelled text/candidate extraction as a fallback and flag conflicting or multiple candidates. Do not guess a person's name from their email or infer a missing country.
+- Normalize Unicode and excess whitespace while preserving legitimate name casing, accents, apostrophes, and hyphens. Missing values become `null`; never invent contact details.
+- Trim emails, normalize the domain, preserve local-part casing, and reject malformed or header-injection input. Format validation does not establish mailbox ownership or deliverability. Document the supported email syntax.
+- Parse phones with `phonenumbers`, validate, and format as E.164. Require a trusted default region for national-format numbers; keep extensions separately. Ambiguous/invalid numbers become `null` with a diagnostic, not a guessed `+1` number. Library validation does not prove ownership or reachability. [Python phonenumbers documentation](https://github.com/daviddrysdale/python-phonenumbers)
+- Keep message content separate from system instructions; do not fetch submitted links or execute embedded content. Enforce size/type limits and escape content at display/export boundaries, including spreadsheet formula injection protection.
+- For this email MVP, a usable email and nonempty message are required to draft. A missing or invalid optional phone or name creates a warning but does not block an otherwise valid lead. Ambiguous recipients, missing permission where required, or unresolved required-field errors enter manual review.
+- The normalizer is deterministic and performs no network calls, model calls, database writes, or sending. The trusted wrapper adds identifiers, time, client context, and permission evidence. Permission is never inferred by the parser or the LLM.
+
+## 6. Workflow, approvals, and recovery
+
+Use durable states with explicit allowed transitions:
+
+```text
+received -> normalized -> drafting -> pending_approval -> approved -> sending -> sent
+received / normalized / drafting -> needs_review
+pending_approval -> rejected | expired
+sending -> delivery_unknown | failed
+```
+
+Transient failures remain in their current step with a scheduled retry; exhausted processing failures enter `failed` with the failed stage recorded. Authorized correction/replay must specify the stage to resume and retain the audit history. Here `sent` means provider acceptance, not confirmed delivery; track delivery, bounce, and complaint events separately.
+
+1. **Capture:** authenticate trusted integrations, validate inputs, deduplicate, and commit the receipt. Recover persisted work after restart through a worker/reconciliation loop; do not rely on an in-memory queue or a one-time request callback.
+2. **Draft:** provide only necessary lead content and verified client facts. Require structured output with subject, body, and escalation reason. Validate the output. Never fabricate prices, availability, guarantees, or completed bookings. The model has no sending tools and cannot choose its own recipient or permissions. Suspicious content and unsupported requests are routed to owner review; prompt wording alone is not a security boundary.
+3. **Review:** show the recipient, subject, body, source context, and warnings. Bind a short-lived, single-use review token to the client, authorized owner's email, lead, and exact draft version; store only its hash and treat it as a bearer credential. Default expiry: 24 hours. A GET only displays the review; a protected POST confirms the decision, so mail scanners cannot approve by following a link.
+4. **Edit or decide:** editing produces a new version and invalidates prior approval. Replacing an approved draft must atomically cancel its unclaimed send intent; block edits once sending begins or delivery is uncertain. Sent drafts are immutable. Changes to recipient or content require fresh confirmation. Protect mutations against cross-site requests and replay; do not log tokens or leak them through referrers. Rejection and review expiry send nothing. Approval and creation of the send intent occur in one transaction; approved content also has a send deadline, after which fresh review is required.
+5. **Send:** atomically claim the outbox item, recheck approval, client pause state, recipient, and applicable suppression/contact rules, then send the approved content. Record the provider response and correlate callbacks. Authenticate and deduplicate delivery callbacks.
+6. **Recover:** retry transient drafting failures up to three times with backoff and jitter; route persistent failures to the operator. Use a stable Resend idempotency key per notification/send intent, while retaining application deduplication independently: Resend's documented key window is 24 hours, not permanent duplicate protection. [Resend idempotency](https://resend.com/docs/dashboard/emails/idempotency-keys) A timeout after a possible email acceptance enters `delivery_unknown`; reconcile provider state or require operator review before retrying. Apply the same uncertain-outcome discipline to notifications. Do not claim exactly-once delivery or blindly resend after a crash.
+
+Rejected, expired, and unresolved manual-review leads remain visible to the owner. Reminder notifications never count as approval. A failed CSV report can be regenerated independently and cannot trigger another customer message. Protect exports with operator access, minimize fields, escape spreadsheet formulas, and delete temporary artifacts under the retention policy. Editing or reimporting a CSV cannot approve a reply.
+
+## 7. Data handling, operations, and cost controls
+
+- Separate development and pilot credentials/data. Use synthetic fixtures in the repository. Keep provider secrets in server-side environment/credential stores, restrict operator access, and keep deployment artifacts free of credentials.
+- Send the minimum necessary data to the selected model under reviewed provider terms. Proposed application retention defaults for pilot agreement: raw payloads up to 7 days, lead/draft content 30 days, and content-free operational audit events 90 days. Apply deletion to application-owned exports and worker logs as well as the application store. Document backup expiry, downloaded-copy deletion responsibilities, provider retention limitations, and agreed exceptions; local deletion does not prove deletion from third-party systems.
+- Back up SQLite through the documented snapshot procedure, along with the deployed code version and required encrypted configuration; test restoration before live intake. Document credential rotation, client offboarding, access revocation, deletion, and a per-client pause switch. Pausing disables new model calls and sending while retaining inbound work for manual handling.
+- Emit structured logs containing client/lead/execution IDs, stage, duration, retry count, safe error code, model token usage, and estimated cost. Exclude full messages, credentials, review links, and contact details from routine logs.
+- Alert the operator on failed processing, stale draft/approval queues, unknown delivery state, credential failure, and budget exhaustion. Define monitoring hours and escalation contacts; do not promise an unattended 24/7 support service.
+- Configure per-client input/output limits, concurrency, daily/monthly email quotas, and a monthly model budget before pilot activation. Atomically reserve email quota for all outbound categories, including notifications and alerts; retain uncertain-send reservations until reconciled. Keep failures visible in the operator report when email quota prevents an alert. Reserve estimated model cost atomically before each call, reconcile actual usage afterward, warn at 80%, and stop new model calls at 100%; keep new leads visible for manual response. Track provider billing separately because estimates can differ from invoices.
+
+Use this model before setting a price:
+
+```text
+Monthly operating cost = hosting + model usage + any optional integration/license costs
+                       + email/channel costs + storage/backups + support labor
+Cost per processed lead = monthly operating cost / processed leads
+Contribution = collected service fees - attributable operating costs
+```
+
+The original $149–$299/month range remains a pricing hypothesis to test with prospects, not a published commitment. Define included volume, onboarding effort, support hours, pause/overage behavior, cancellation, and data export before sale. Do not assume an unlimited plan is sustainable.
+
+## 8. Delivery sequence and acceptance gates
+
+These phases are the design sequence, not a parallel task tracker. Use Beads for implementation issues, dependencies, evidence, and completion status; do not add Markdown TODO lists. On review, `bd where` reported no active workspace. Initialize Beads when implementation work starts, then create small issues within these phases rather than treating a whole phase as one task.
+
+The schedule is an estimate for one builder; integration access and verification determine completion.
+
+| Phase | Dependency and indicative timing | Deliverable | Acceptance evidence |
+| --- | --- | --- | --- |
+| 0. Confirm the pilot assumptions | Before provider-dependent work; days 1–2 | Target segment, intake source, sender, region/timezone, budget, data terms, hosting/licensing decision | Recorded decisions and a cost estimate; owner-approved business facts and test recipient available before live tests |
+| 1. Build and verify the foundation | Phase 0 defaults; week 1 | Catalogue, accessible intake, minimal service-request endpoint/store, pure normalizer, local fixtures/tests | Browser submission creates one persisted receipt; retry deduplicates; invalid/offline submissions show errors; normalization fixtures pass |
+| 2. Prove the draft workflow | Phase 1; week 2 | Authenticated lead ingestion, durable work pickup, one model integration, draft storage and review notification | Synthetic event reaches a schema-valid review draft; duplicate/restart/provider-failure cases recover without losing the accepted event |
+| 3. Prove approval and delivery | Phase 2; week 3 | Versioned review UI, approval transaction, outbox, provider status handling, pause switch and runbook | Authorized test email arrives with the exact approved content; rejection, expiry, old versions, duplicate clicks, and uncertain-send tests cannot cause an unauthorized send; restore rehearsal succeeds |
+| 4. Run the pilot | Phase 3 gates passed; weeks 4–5 or longer | 1–2 clients operated for at least 14 days; daily review of issues and costs | Metrics below, failure reconciliation, client feedback, and recorded decisions to continue, change, or stop |
+| 5. Package and launch | Successful pilot; week 6+ | Defined pricing/limits, deployment template, onboarding/offboarding instructions, public intake | Complete onboarding rehearsal, evidence-backed claims, agreed service terms, support ownership, and rollback/pause procedure |
+
+Each Beads implementation issue should state the user outcome, dependencies, likely files, testable acceptance criteria, and exact verification commands/results. Keep issues small enough for a focused implementation session. Preserve blocked work with its reason; do not close it because scaffolding exists.
+
+### Pilot measurement
+
+Collect a pre-pilot response-time and handling-time baseline. Proposed targets are acceptance thresholds to validate, not current performance claims:
+
+| Measure | Definition and proposed gate |
+| --- | --- |
+| Draft reliability | At least 95% of eligible persisted leads produce a reviewable draft within 120 seconds; count exhausted failures and budget pauses in the denominator and report them separately. |
+| Draft quality | Owner accepts at least 90% without substantive factual/tone edits; report numerator, denominator, edit rubric, and rejection reasons. |
+| Approval control | Zero observed customer messages without a valid approval for the exact recipient and version. Verify through automated adverse cases and pilot audit reconciliation. |
+| Duplicate/recovery control | Replaying a source event or approval creates no extra send intent; all accepted leads have a known state after restart/failure drills. |
+| Business value | Report median and p95 time from enquiry to provider acceptance, owner review delay, handling time, and actual replies/bookings when available. Do not attribute every conversion to AI. |
+| Economics | Measured cost and founder support time fit the agreed per-client budget and proposed package. |
+
+Use at least 30 synthetic edge-case scenarios before live intake and at least 50 owner-reviewed real drafts across the pilot before judging draft quality. Keep synthetic and real metrics separate; extend a low-volume pilot instead of presenting a tiny sample as proof. Record all incidents and their resolution rather than promising “error-free logs.”
+
+## 9. Verification and handoff requirements
+
+The first implementation must document reproducible Mac setup, pinned runtime/dependency versions, environment variables with dummy values, exact run/test/build commands, expected sample output, and troubleshooting. Do not publish commands as verified until they have run in the actual checkout.
+
+**100% code coverage is a required quality gate from the first implementation onward.** Use pytest with coverage.py/pytest-cov for Python, Vitest for JavaScript coverage, and Playwright for browser acceptance; these tools complement one another. Require 100% Python executable lines/statements and branches, and 100% JavaScript lines, statements, functions, and branches, both per file and in aggregate. Include all first-party executable source, including unimported files, browser scripts, custom workflow code, CLI tools, and operational scripts. Instrument any additional executable language rather than silently omitting it. Document exclusions for dependencies, generated artifacts, tests/fixtures, and non-executable assets; never exclude application logic or add coverage-ignore directives to inflate results. Use meaningful assertions, exact covered/total counts, fresh full-suite reports, and CI failure below any threshold. The dedicated P32A prompt in InitialPrompt audits this gate before P33 enforces it in CI; every later code change must preserve it. Coverage does not replace browser, integration, or deployed-flow verification.
+
+Verification must cover:
+
+- Normalization: Unicode names, empty/wrong-type/oversized input, invalid email, multiple candidates, international and national phones, missing region, extensions, missing optional fields, and deterministic output.
+- Intake and isolation: real browser-to-storage submission, stable receipts, conflicting event IDs, spoofed client IDs, unauthenticated integrations, abuse limits, and cross-client access attempts.
+- SQLite: file-backed integration tests, per-connection settings, transactional migrations, concurrent claims/approvals, lock-timeout handling, storage failures, persistence across redeployment, and integrity-checked backup restoration.
+- Workflow: malformed model output, injected instructions, timeouts/rate limits, budget exhaustion, notification/export failure, expired/replayed approvals, edit-after-approval, and restart during delivery.
+- UI: mobile and desktop layouts, keyboard-only operation, readable errors, focus handling, loading/retry states, and accurate service availability labels.
+- Operations: authenticated provider callbacks, approved delivery to an authorized test recipient, backup restoration, pause/resume, redacted logs, and removal of a test client's data from stores and exports.
+
+Report local tests, browser verification, workflow execution, and deployed end-to-end evidence separately. Code review or a successful API call is not proof that the complete service works. If a provider account, credential, runtime, or live recipient is unavailable, identify the exact remaining check and keep that readiness gate open.
+
+Decisions still needed before the live pilot: actual pilot businesses and country, owner availability, provider/sender access, hosting ownership, operating budget, retention agreement, and supported contact-permission policy. Use synthetic local defaults to continue foundation work; do not silently treat those defaults as customer approval.
